@@ -1,17 +1,10 @@
 const express = require("express");
 
+const alertsController = require("../controllers/alerts.controller");
+
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.json([]);
-});
-
-router.patch("/:id/resolve", (req, res) => {
-  res.json({
-    id: Number(req.params.id),
-    status: "resolved",
-    resolvedAt: new Date().toISOString()
-  });
-});
+router.get("/", alertsController.getAlerts);
+router.patch("/:id/resolve", alertsController.resolveAlert);
 
 module.exports = router;

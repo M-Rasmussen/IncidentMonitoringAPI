@@ -1,17 +1,10 @@
 const express = require("express");
 
+const eventsController = require("../controllers/events.controller");
+
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.json([]);
-});
-
-router.post("/", (req, res) => {
-  res.status(201).json({
-    id: 1,
-    ...req.body,
-    createdAt: new Date().toISOString()
-  });
-});
+router.post("/", eventsController.createEvent);
+router.get("/", eventsController.getEvents);
 
 module.exports = router;
