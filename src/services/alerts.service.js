@@ -20,6 +20,8 @@ async function createAlert(data) {
   if (existingAlert) {
     existingAlert.lastSeenAt = new Date().toISOString();
     existingAlert.eventCount += 1;
+    existingAlert.message = data.message;
+    existingAlert.eventId = data.eventId || existingAlert.eventId;
     return existingAlert;
   }
 

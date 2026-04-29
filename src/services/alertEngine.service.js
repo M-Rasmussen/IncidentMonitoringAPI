@@ -6,10 +6,11 @@ async function evaluateEvent(event) {
 
 
     return alertsService.createAlert({
-  service: event.service,
-  type: "critical_event",
-  message: `Critical event detected: ${event.message}`,
-  eventId: event.id
+        service: event.service,
+        type: "critical_event",
+        signature: event.message,
+        message: `Critical event detected: ${event.message}`,
+        eventId: event.id
     });
   }
 
@@ -25,6 +26,7 @@ async function evaluateEvent(event) {
       return alertsService.createAlert({
         service: event.service,
         type: "error_rate",
+        signature: `${event.service}:error_rate:60s`,
         message: `High error rate detected: ${recentErrors.length} errors in 60 seconds`,
         eventId: event.id
       });
