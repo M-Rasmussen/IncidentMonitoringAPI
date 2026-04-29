@@ -15,6 +15,21 @@ async function createEvent(req, res, next) {
       });
     }
 
+    if (event.level === "error") {
+      const recentErrors = await eventsService.getRecentErrorsByService(
+        event.service,
+        60 * 1000
+      );
+
+      if (recentErrors.length >= 5) {
+        alert = await alertsService.createAlert({
+          service: event.service,
+          message: `High error rate detected: ${recentErrors.length} errors in 60 seconds`,
+          eventId: event.id
+        });
+      }
+    }
+
     res.status(201).json({
       event,
       alert
@@ -27,7 +42,6 @@ async function createEvent(req, res, next) {
 async function getEvents(req, res, next) {
   try {
     const events = await eventsService.getEvents();
-
     res.json(events);
   } catch (error) {
     next(error);
