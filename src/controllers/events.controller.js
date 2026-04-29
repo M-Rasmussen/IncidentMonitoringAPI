@@ -1,19 +1,10 @@
 const eventsService = require("../services/events.service");
-const alertsService = require("../services/alerts.service");
+const alertEngine = require("../services/alertEngine.service");
 
 async function createEvent(req, res, next) {
   try {
     const event = await eventsService.createEvent(req.body);
-
-    let alert = null;
-
-    if (event.level === "critical") {
-      alert = await alertsService.createAlert({
-        service: event.service,
-        message: `Critical event detected: ${event.message}`,
-        eventId: event.id
-      });
-    }
+    const alert = await alertEngine.evaluateEvent(event);
 
     res.status(201).json({
       event,

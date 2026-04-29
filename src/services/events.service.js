@@ -19,7 +19,22 @@ async function getEvents() {
   return events;
 }
 
+async function getRecentErrorsByService(service, timeWindowMs) {
+  const now = Date.now();
+
+  return events.filter(event => {
+    const eventTime = new Date(event.createdAt).getTime();
+
+    return (
+      event.service === service &&
+      event.level === "error" &&
+      now - eventTime <= timeWindowMs
+    );
+  });
+}
+
 module.exports = {
   createEvent,
-  getEvents
+  getEvents,
+  getRecentErrorsByService
 };
