@@ -17,7 +17,7 @@ async function createEvent(req, res, next) {
 
 async function getEvents(req, res, next) {
   try {
-    const events = await eventsService.getEvents();
+    const events = await eventsService.getEvents(req.query);
 
     res.json(events);
   } catch (error) {

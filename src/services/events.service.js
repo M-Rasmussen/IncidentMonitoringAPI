@@ -15,8 +15,32 @@ async function createEvent(data) {
   return event;
 }
 
-async function getEvents() {
-  return events;
+async function getEvents(filters = {}) {
+  let result = [...events];
+
+  if (filters.service) {
+    result = result.filter(event => event.service === filters.service);
+  }
+
+  if (filters.level) {
+    result = result.filter(event => event.level === filters.level);
+  }
+
+  const page = Number(filters.page) || 1;
+  const limit = Number(filters.limit) || 10;
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  return {
+    data: result.slice(startIndex, endIndex),
+    pagination: {
+      page,
+      limit,
+      total: result.length,
+      totalPages: Math.ceil(result.length / limit)
+    }
+  };
 }
 
 async function getRecentErrorsByService(service, timeWindowMs) {
