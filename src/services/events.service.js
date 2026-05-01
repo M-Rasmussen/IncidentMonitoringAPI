@@ -1,62 +1,70 @@
-const events = [];
+const db = require("../config/db");
 
 async function createEvent(data) {
-  const event = {
-    id: events.length + 1,
-    service: data.service,
-    level: data.level,
-    message: data.message,
-    metadata: data.metadata || {},
-    createdAt: new Date().toISOString()
-  };
+  const result = await db.query(
+    `
+    INSERT INTO events (service, level, message, metadata)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+    `,
+    [
+      data.service,
+      data.level,
+      data.message,
+      data.metadata || {}
+    ]
+  );
 
-  events.push(event);
-
-  return event;
+  return result.rows[0];
 }
-
 async function getEvents(filters = {}) {
-  let result = [...events];
+  let query = `SELECT * FROM events WHERE 1=1`;
+  const values = [];
+  let index = 1;
 
   if (filters.service) {
-    result = result.filter(event => event.service === filters.service);
+    query += ` AND service = $${index++}`;
+    values.push(filters.service);
   }
 
   if (filters.level) {
-    result = result.filter(event => event.level === filters.level);
+    query += ` AND level = $${index++}`;
+    values.push(filters.level);
   }
+
+  query += ` ORDER BY created_at DESC`;
 
   const page = Number(filters.page) || 1;
   const limit = Number(filters.limit) || 10;
+  const offset = (page - 1) * limit;
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+  query += ` LIMIT $${index++} OFFSET $${index++}`;
+  values.push(limit, offset);
+
+  const result = await db.query(query, values);
 
   return {
-    data: result.slice(startIndex, endIndex),
+    data: result.rows,
     pagination: {
       page,
-      limit,
-      total: result.length,
-      totalPages: Math.ceil(result.length / limit)
+      limit
     }
   };
 }
-
 async function getRecentErrorsByService(service, timeWindowMs) {
-  const now = Date.now();
+  const result = await db.query(
+    `
+    SELECT *
+    FROM events
+    WHERE service = $1
+      AND level = 'error'
+      AND created_at >= NOW() - INTERVAL '60 seconds'
+    `,
+    [service]
+  );
 
-  return events.filter(event => {
-    const eventTime = new Date(event.createdAt).getTime();
-
-    return (
-      event.service === service &&
-      event.level === "error" &&
-      now - eventTime <= timeWindowMs
-    );
-  });
+  return result.rows;
 }
-
 module.exports = {
   createEvent,
   getEvents,
