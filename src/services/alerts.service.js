@@ -1,103 +1,126 @@
-const alerts = [];
-const lastAlertByKey = {};
+const db = require("../config/db");
 
-function findOpenAlert(service, type, signature) {
-  return alerts.find(
-    alert =>
-      alert.service === service &&
-      alert.type === type &&
-      alert.signature === signature &&
-      alert.status === "open"
+async function findOpenAlert(service, type, signature) {
+  const result = await db.query(
+    `
+    SELECT *
+    FROM alerts
+    WHERE service = $1
+      AND type = $2
+      AND signature = $3
+      AND status = 'open'
+    LIMIT 1
+    `,
+    [service, type, signature]
   );
+
+  return result.rows[0] || null;
 }
 
 async function createAlert(data) {
   const type = data.type || "generic";
   const signature = data.signature || data.message;
 
-  const existingAlert = findOpenAlert(data.service, type, signature);
+  const existingAlert = await findOpenAlert(data.service, type, signature);
 
   if (existingAlert) {
-    existingAlert.lastSeenAt = new Date().toISOString();
-    existingAlert.eventCount += 1;
-    existingAlert.message = data.message;
-    existingAlert.eventId = data.eventId || existingAlert.eventId;
-    return existingAlert;
+    const result = await db.query(
+      `
+      UPDATE alerts
+      SET
+        event_count = event_count + 1,
+        last_seen_at = CURRENT_TIMESTAMP,
+        message = $1,
+        event_id = $2
+      WHERE id = $3
+      RETURNING *
+      `,
+      [data.message, data.eventId || existingAlert.event_id, existingAlert.id]
+    );
+
+    return result.rows[0];
   }
 
-  const now = Date.now();
-  const cooldownMs = 60 * 1000;
+  const result = await db.query(
+    `
+    INSERT INTO alerts (
+      service,
+      type,
+      signature,
+      message,
+      status,
+      event_id,
+      event_count
+    )
+    VALUES ($1, $2, $3, $4, 'open', $5, 1)
+    RETURNING *
+    `,
+    [
+      data.service,
+      type,
+      signature,
+      data.message,
+      data.eventId || null
+    ]
+  );
 
-  const dedupeKey = `${data.service}:${type}:${signature}`;
-  const lastAlertTime = lastAlertByKey[dedupeKey];
-
-  if (lastAlertTime && now - lastAlertTime < cooldownMs) {
-    return null;
-  }
-
-  const alert = {
-    id: alerts.length + 1,
-    service: data.service,
-    type,
-    signature,
-    message: data.message,
-    status: "open",
-    eventId: data.eventId || null,
-    eventCount: 1,
-    createdAt: new Date().toISOString(),
-    lastSeenAt: new Date().toISOString(),
-    resolvedAt: null
-  };
-
-  alerts.push(alert);
-  lastAlertByKey[dedupeKey] = now;
-
-  return alert;
+  return result.rows[0];
 }
 
 async function getAlerts(filters = {}) {
-  let result = [...alerts];
+  let query = `SELECT * FROM alerts WHERE 1=1`;
+  const values = [];
+  let index = 1;
 
   if (filters.service) {
-    result = result.filter(alert => alert.service === filters.service);
+    query += ` AND service = $${index++}`;
+    values.push(filters.service);
   }
 
   if (filters.status) {
-    result = result.filter(alert => alert.status === filters.status);
+    query += ` AND status = $${index++}`;
+    values.push(filters.status);
   }
 
   if (filters.type) {
-    result = result.filter(alert => alert.type === filters.type);
+    query += ` AND type = $${index++}`;
+    values.push(filters.type);
   }
+
+  query += ` ORDER BY created_at DESC`;
 
   const page = Number(filters.page) || 1;
   const limit = Number(filters.limit) || 10;
+  const offset = (page - 1) * limit;
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+  query += ` LIMIT $${index++} OFFSET $${index++}`;
+  values.push(limit, offset);
+
+  const result = await db.query(query, values);
 
   return {
-    data: result.slice(startIndex, endIndex),
+    data: result.rows,
     pagination: {
       page,
-      limit,
-      total: result.length,
-      totalPages: Math.ceil(result.length / limit)
+      limit
     }
   };
 }
 
 async function resolveAlert(id) {
-  const alert = alerts.find(alert => alert.id === Number(id));
+  const result = await db.query(
+    `
+    UPDATE alerts
+    SET
+      status = 'resolved',
+      resolved_at = CURRENT_TIMESTAMP
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id]
+  );
 
-  if (!alert) {
-    return null;
-  }
-
-  alert.status = "resolved";
-  alert.resolvedAt = new Date().toISOString();
-
-  return alert;
+  return result.rows[0] || null;
 }
 
 module.exports = {
