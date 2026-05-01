@@ -55,8 +55,36 @@ async function createAlert(data) {
   return alert;
 }
 
-async function getAlerts() {
-  return alerts;
+async function getAlerts(filters = {}) {
+  let result = [...alerts];
+
+  if (filters.service) {
+    result = result.filter(alert => alert.service === filters.service);
+  }
+
+  if (filters.status) {
+    result = result.filter(alert => alert.status === filters.status);
+  }
+
+  if (filters.type) {
+    result = result.filter(alert => alert.type === filters.type);
+  }
+
+  const page = Number(filters.page) || 1;
+  const limit = Number(filters.limit) || 10;
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  return {
+    data: result.slice(startIndex, endIndex),
+    pagination: {
+      page,
+      limit,
+      total: result.length,
+      totalPages: Math.ceil(result.length / limit)
+    }
+  };
 }
 
 async function resolveAlert(id) {
