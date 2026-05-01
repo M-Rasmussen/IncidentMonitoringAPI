@@ -5,7 +5,8 @@ async function initDb() {
     CREATE TABLE IF NOT EXISTS events (
       id SERIAL PRIMARY KEY,
       service VARCHAR(255) NOT NULL,
-      level VARCHAR(50) NOT NULL CHECK (level IN ('info', 'warn', 'error', 'critical')),      message TEXT NOT NULL,
+      level VARCHAR(50) NOT NULL CHECK (level IN ('info', 'warn', 'error', 'critical')),
+      message TEXT NOT NULL,
       metadata JSONB DEFAULT '{}'::jsonb,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -18,7 +19,8 @@ async function initDb() {
       type VARCHAR(100) NOT NULL,
       signature TEXT NOT NULL,
       message TEXT NOT NULL,
-      status VARCHAR(50) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),      event_id INTEGER REFERENCES events(id) ON DELETE SET NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),
+      event_id INTEGER REFERENCES events(id) ON DELETE SET NULL,
       event_count INTEGER NOT NULL DEFAULT 1,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
