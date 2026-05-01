@@ -2,8 +2,7 @@ const alertsService = require("../services/alerts.service");
 
 async function getAlerts(req, res, next) {
   try {
-    const alerts = await alertsService.getAlerts();
-
+    const alerts = await alertsService.getAlerts(req.query);
     res.json(alerts);
   } catch (error) {
     next(error);
