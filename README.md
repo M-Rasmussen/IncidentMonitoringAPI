@@ -1,75 +1,108 @@
 # 📊 Incident Monitoring System
 
-A full-stack incident monitoring and alerting system inspired by modern observability platforms like Datadog.
+A full-stack incident monitoring and alerting system inspired by modern observability platforms like Datadog.  
 This application ingests service events, detects anomalies, generates alerts, and provides a real-time dashboard for monitoring system health.
+
+---
+
+## 🚀 Live Demo
+
+👉 **Frontend:** https://incident-monitor-dashboard.onrender.com  
+👉 **Backend API:** https://incident-monitor-api.onrender.com
+
+> ⚠️ Note: The app may take a few seconds to load if hosted on a free tier.
+
+---
+
+## 📸 Dashboard Preview
+<img width="1130" height="909" alt="image" src="https://github.com/user-attachments/assets/2aaa5e55-453d-4303-b97a-0c0eaff78b1a" />
+
+---
 
 ## 🚀 Overview
 
 This project simulates a production-style monitoring system where:
-- Services emit events (info, warn, error, critical)
+
+- Services emit events (`info`, `warn`, `error`, `critical`)
 - The backend processes and analyzes event streams
 - Alerts are generated based on severity and rate thresholds
 - Alerts are deduplicated and tracked over time
 - A React dashboard visualizes system state and allows interaction
 
-### 🧠 Key Features
-## 🔔 Intelligent Alerting Engine
-- Critical events immediately trigger alerts
-- Error-rate threshold detection (e.g., 5+ errors in 60s)
-- Deduplication using alert signatures
-- Open alert reuse (prevents alert spam)
+---
+
+## 🧠 Key Features
+
+### 🔔 Intelligent Alerting Engine
+- Critical events trigger immediate alerts
+- Error-rate threshold detection (e.g. **5+ errors in 60s**)
+- Alert deduplication using signatures
+- Open alert reuse to prevent alert flooding
 - Event count tracking and last-seen updates
+
 ### 🗄️ Persistent Data Layer
 - PostgreSQL-backed storage (Dockerized)
-- Events and alerts stored with relational integrity
-- Foreign key relationships between alerts and events
+- Relational integrity with foreign key constraints
 - Indexed queries for performance optimization
+
 ### 📊 Observability Dashboard (React)
 - Real-time alerts and events view
-- Filter by service, level, status
+- Filtering by service, level, status
 - Resolve alerts directly from UI
-- Metrics summary (open alerts, errors, critical events)
-- Responsive, dashboard-style UI (Datadog-inspired)
+- Metrics summary (open alerts, error volume, critical events)
+- Fully responsive, dashboard-style UI
+
 ### 🔎 Query Capabilities
-- Filtering + pagination for:
-  - Events
-  - Alerts
-- Query parameters:
-  - service
-  - level
-  - status
-  - type
+Supports filtering and pagination:
+
+- `/api/events`
+- `/api/alerts`
+
+Query parameters:
+- `service`
+- `level`
+- `status`
+- `type`
+
+---
+
 ## 🏗️ Architecture
-Frontend (React)
-    ↓
-Backend API (Node.js / Express)
-    ↓
-Alert Engine (business logic layer)
-    ↓
-PostgreSQL (Docker)
+
+Frontend (React)  → Backend API (Node.js / Express)  → Alert Engine (business logic layer) → PostgreSQL (Docker)
+
 ### Backend Layers
 controllers → services → alert engine → database
-- Controllers: HTTP layer
-- Services: DB interaction
-- Alert Engine: core logic (rules, dedup, thresholds)
-- DB: persistent storage
+- **Controllers** → HTTP layer
+- **Services** → DB interaction
+- **Alert Engine** → core logic (rules, dedup, thresholds)
+- **Database** → persistent storage
+
+---
+
 ## 🛠️ Tech Stack
+
 ### Backend
 - Node.js
 - Express
 - PostgreSQL (Docker)
 - node-postgres (pg)
+
 ### Frontend
 - React (Vite)
 - Axios
 - CSS (custom responsive design)
+
 ### Dev Tools
 - Docker
 - Nodemon
 - Git
+
+---
+
 ## 📦 Installation
+
 ### 1. Clone the repo
-git clone <your-repo-url>
+git clone (https://github.com/M-Rasmussen/IncidentMonitoringAPI)
 cd IncidentMonitoringAPI
 
 ### 2. Start PostgreSQL (Docker)
@@ -95,7 +128,6 @@ cd client
 npm install
 npm run dev
 ## 🌐 Usage
-
 Open:
 http://localhost:5173
 
@@ -127,15 +159,9 @@ PATCH  /api/alerts/:id/resolve
   - service
   - level
   - created_at
-  - composite indexes for filtering
+- Composite indexes for filtering
 - Efficient alert deduplication
 - Minimal redundant alert creation
-
-## 📸 Screenshots
-### DashBoard
-<img width="1130" height="909" alt="image" src="https://github.com/user-attachments/assets/2aaa5e55-453d-4303-b97a-0c0eaff78b1a" />
-### Alerts
-<img width="1124" height="812" alt="image" src="https://github.com/user-attachments/assets/39e49da4-41b6-4a0c-aa60-14345097d350" />
 
 ### 🧠 What This Project Demonstrates
 - Backend system design
@@ -144,10 +170,7 @@ PATCH  /api/alerts/:id/resolve
 - API design with filtering and pagination
 - Full-stack integration
 - Real-world alerting patterns (deduplication, thresholds)
-📬 Author
+
+###📬 Author
 
 Built by Matthew Rasmussen
-
-### ⭐ Notes
-
-This project is designed to demonstrate backend and full-stack engineering skills in a realistic system design context.
