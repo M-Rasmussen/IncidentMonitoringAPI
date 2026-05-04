@@ -7,6 +7,7 @@ import Metrics from "./components/Metrics";
 import Filters from "./components/Filters";
 import AlertsPanel from "./components/AlertsPanel";
 import EventsPanel from "./components/EventsPanel";
+import DemoCard from "./components/DemoCard";
 
 import {
   getAlerts,
@@ -91,6 +92,8 @@ function App() {
           onCreateError={createTestErrorEvent}
           onCreateCritical={createTestCriticalEvent}
         />
+
+        <DemoCard />
 
         {(showDashboard || showServices) && (
           <Metrics alerts={alerts} events={events} />
