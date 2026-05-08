@@ -123,8 +123,46 @@ async function resolveAlert(id) {
   return result.rows[0] || null;
 }
 
+async function getAlertById(id) {
+  const result = await db.query(
+    `
+    SELECT *
+    FROM alerts
+    WHERE id = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function updateAiSummary(alertId, aiData) {
+  const result = await db.query(
+    `
+    UPDATE alerts
+    SET
+      ai_summary = $1,
+      ai_possible_cause = $2,
+      ai_suggested_steps = $3,
+      ai_generated_at = CURRENT_TIMESTAMP
+    WHERE id = $4
+    RETURNING *
+    `,
+    [
+      aiData.summary,
+      aiData.possibleCause,
+      aiData.suggestedSteps,
+      alertId,
+    ]
+  );
+
+  return result.rows[0] || null;
+}
+
 module.exports = {
   createAlert,
   getAlerts,
-  resolveAlert
+  resolveAlert,
+  getAlertById,
+  updateAiSummary
 };

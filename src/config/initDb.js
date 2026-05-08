@@ -24,7 +24,11 @@ async function initDb() {
       event_count INTEGER NOT NULL DEFAULT 1,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      resolved_at TIMESTAMP
+      resolved_at TIMESTAMP,
+      ai_summary TEXT,
+      ai_possible_cause TEXT,
+      ai_suggested_steps TEXT,
+      ai_generated_at TIMESTAMP
     );
   `);
   await db.query(`

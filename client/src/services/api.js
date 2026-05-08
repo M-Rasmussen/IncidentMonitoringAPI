@@ -19,3 +19,17 @@ export async function resolveAlert(id) {
 export async function createEvent(event) {
   await axios.post(`${API_URL}/api/events`, event);
 }
+
+export async function generateAiSummary(alertId) {
+  const res = await axios.post(
+    `${API_URL}/api/alerts/${alertId}/ai-summary`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_ADMIN_TOKEN}`,
+      },
+    }
+  );
+
+  return res.data.data || res.data;
+}
