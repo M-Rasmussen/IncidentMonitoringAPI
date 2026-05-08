@@ -13,7 +13,8 @@ import {
   getAlerts,
   getEvents,
   resolveAlert,
-  createEvent
+  createEvent,
+  generateAiSummary,
 } from "./services/api";
 
 function App() {
@@ -53,11 +54,30 @@ function App() {
     await fetchAlerts();
   }
 
+  async function handleGenerateAiSummary(alertId) {
+    try {
+      const updatedAlert = await generateAiSummary(alertId);
+
+      setAlerts((prevAlerts) =>
+        prevAlerts.map((alert) =>
+          alert.id === updatedAlert.id ? updatedAlert : alert
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to generate AI summary"
+      );
+    }
+  }
+
   async function createTestCriticalEvent() {
     await createEvent({
       service: "payment-api",
       level: "critical",
-      message: "database connection failed"
+      message: "database connection failed",
     });
 
     await refreshDashboard();
@@ -67,7 +87,7 @@ function App() {
     await createEvent({
       service: "payment-api",
       level: "error",
-      message: "payment timeout"
+      message: "payment timeout",
     });
 
     await refreshDashboard();
@@ -113,31 +133,53 @@ function App() {
           <div className="panel service-panel">
             <div className="panel-header">
               <h2>Services</h2>
-              <p>Service-level health summary derived from current events and alerts.</p>
+              <p>
+                Service-level health summary derived from current events and
+                alerts.
+              </p>
             </div>
 
             <div className="service-summary">
               <strong>payment-api</strong>
-              <span>{alerts.filter((alert) => alert.service === "payment-api" && alert.status === "open").length} open alerts</span>
-              <span>{events.filter((event) => event.service === "payment-api").length} events</span>
+              <span>
+                {
+                  alerts.filter(
+                    (alert) =>
+                      alert.service === "payment-api" &&
+                      alert.status === "open"
+                  ).length
+                }{" "}
+                open alerts
+              </span>
+              <span>
+                {events.filter((event) => event.service === "payment-api")
+                  .length}{" "}
+                events
+              </span>
             </div>
           </div>
         )}
 
         {showDashboard && (
           <section className="grid">
-            <AlertsPanel alerts={alerts} onResolveAlert={handleResolveAlert} />
+            <AlertsPanel
+              alerts={alerts}
+              onResolveAlert={handleResolveAlert}
+              onGenerateAiSummary={handleGenerateAiSummary}
+            />
             <EventsPanel events={events} />
           </section>
         )}
 
         {showAlerts && (
-          <AlertsPanel alerts={alerts} onResolveAlert={handleResolveAlert} />
+          <AlertsPanel
+            alerts={alerts}
+            onResolveAlert={handleResolveAlert}
+            onGenerateAiSummary={handleGenerateAiSummary}
+          />
         )}
 
-        {showEvents && (
-          <EventsPanel events={events} />
-        )}
+        {showEvents && <EventsPanel events={events} />}
       </section>
     </main>
   );

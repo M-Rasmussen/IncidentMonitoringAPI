@@ -1,4 +1,20 @@
-function AlertsPanel({ alerts, onResolveAlert }) {
+import { useState } from "react";
+
+function AlertsPanel({ alerts, onResolveAlert, onGenerateAiSummary }) {
+  const [loadingAlertId, setLoadingAlertId] = useState(null);
+
+  async function handleGenerateAiSummary(alertId) {
+    try {
+      setLoadingAlertId(alertId);
+      await onGenerateAiSummary(alertId);
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "Failed to generate AI summary");
+    } finally {
+      setLoadingAlertId(null);
+    }
+  }
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -20,30 +36,65 @@ function AlertsPanel({ alerts, onResolveAlert }) {
         {alerts.length === 0 ? (
           <div className="empty">No alerts found.</div>
         ) : (
-          alerts.map((alert) => (
-            <div className="table-row alerts-row" key={alert.id}>
-              <div>
-                <strong>{alert.service}</strong>
-                <p>{alert.message}</p>
+          alerts.map((alert) => {
+            const hasAiSummary = Boolean(alert.ai_summary);
+            const isGenerating = loadingAlertId === alert.id;
+
+            return (
+              <div className="alert-item" key={alert.id}>
+                <div className="table-row alerts-row">
+                  <div>
+                    <strong>{alert.service}</strong>
+                    <p>{alert.message}</p>
+                  </div>
+
+                  <span className="muted">{alert.type}</span>
+
+                  <span className={`badge badge-${alert.status}`}>
+                    {alert.status}
+                  </span>
+
+                  <span>{alert.event_count || alert.eventCount || 1}</span>
+
+                  <div className="alert-actions">
+                    {alert.status === "open" ? (
+                      <button
+                        className="small"
+                        onClick={() => onResolveAlert(alert.id)}
+                      >
+                        Resolve
+                      </button>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
+
+                    {!hasAiSummary && (
+                      <button
+                        className="small"
+                        onClick={() => handleGenerateAiSummary(alert.id)}
+                        disabled={isGenerating}
+                      >
+                        {isGenerating ? "Generating..." : "AI Summary"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {hasAiSummary && (
+                  <div className="ai-summary">
+                    <h4>AI Summary</h4>
+                    <p>{alert.ai_summary}</p>
+
+                    <h5>Possible Cause</h5>
+                    <p>{alert.ai_possible_cause}</p>
+
+                    <h5>Suggested Steps</h5>
+                    <pre>{alert.ai_suggested_steps}</pre>
+                  </div>
+                )}
               </div>
-
-              <span className="muted">{alert.type}</span>
-
-              <span className={`badge badge-${alert.status}`}>
-                {alert.status}
-              </span>
-
-              <span>{alert.event_count || alert.eventCount || 1}</span>
-
-              {alert.status === "open" ? (
-                <button className="small" onClick={() => onResolveAlert(alert.id)}>
-                  Resolve
-                </button>
-              ) : (
-                <span className="muted">—</span>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -65,8 +65,24 @@ async function getRecentErrorsByService(service, timeWindowMs) {
 
   return result.rows;
 }
+async function getRecentEventsByService(service, limit = 10) {
+  const result = await db.query(
+    `
+    SELECT *
+    FROM events
+    WHERE service = $1
+    ORDER BY created_at DESC
+    LIMIT $2
+    `,
+    [service, limit]
+  );
+
+  return result.rows;
+}
+
 module.exports = {
   createEvent,
   getEvents,
-  getRecentErrorsByService
+  getRecentErrorsByService,
+  getRecentEventsByService
 };
