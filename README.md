@@ -15,7 +15,8 @@ This application ingests service events, detects anomalies, generates alerts, an
 ---
 
 ## 📸 Dashboard Preview
-<img width="1130" height="909" alt="image" src="https://github.com/user-attachments/assets/2aaa5e55-453d-4303-b97a-0c0eaff78b1a" />
+<img width="894" height="906" alt="image" src="https://github.com/user-attachments/assets/503271b2-5a68-4684-90a3-3ad1e3e6ee3b" />
+
 
 ---
 
@@ -64,19 +65,26 @@ Query parameters:
 - `status`
 - `type`
 
+### 🤖 AI-Assisted Alert Analysis
+- AI-generated operational summaries using OpenAI APIs
+- Suggested remediation steps and possible root-cause analysis
+- Rate-limited AI workflows to control external API usage
+- Backend-only AI integration using environment-based secrets
 ---
 
 ## 🏗️ Architecture
 
-Frontend (React)  → Backend API (Node.js / Express)  → Alert Engine (business logic layer) → PostgreSQL (Docker)
+Frontend (React)  → Backend API (Node.js / Express)  → Alert Engine & AI Analysis Layer → PostgreSQL (Docker)
 
 ### Backend Layers
-controllers → services → alert engine → database
-- **Controllers** → HTTP layer
-- **Services** → DB interaction
-- **Alert Engine** → core logic (rules, dedup, thresholds)
-- **Database** → persistent storage
 
+routes → controllers → services → alert engine → database
+
+- **Routes** → API endpoint definitions
+- **Controllers** → request orchestration and response handling
+- **Services** → business logic and database interaction
+- **Alert Engine** → threshold detection, deduplication, alert workflows
+- **Database** → persistent relational storage
 ---
 
 ## 🛠️ Tech Stack
@@ -86,6 +94,7 @@ controllers → services → alert engine → database
 - Express
 - PostgreSQL (Docker)
 - node-postgres (pg)
+-  OpenAI API
 
 ### Frontend
 - React (Vite)
@@ -115,9 +124,12 @@ docker run --name incident-postgres \
 ### 3. Configure environment
 
 Create .env in root:
-
 PORT=5000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/incident_monitor
+
+OPENAI_API_KEY=your_key_here
+AI_SUMMARY_ENABLED=true
+MAX_AI_SUMMARIES_PER_DAY=20DATABASE_URL=postgresql://postgres:postgres@localhost:5432/incident_monitor
 
 ### 4. Start backend
 npm install
@@ -142,6 +154,7 @@ http://localhost:5173
 ### Events
 POST /api/events
 GET  /api/events
+POST /api/alerts/:id/ai-summary
 
 ### Alerts
 GET    /api/alerts
@@ -164,13 +177,16 @@ PATCH  /api/alerts/:id/resolve
 - Minimal redundant alert creation
 
 ### 🧠 What This Project Demonstrates
-- Backend system design
-- Event-driven architecture
-- Data modeling and relational integrity
-- API design with filtering and pagination
-- Full-stack integration
-- Real-world alerting patterns (deduplication, thresholds)
+- Full-stack application architecture
+- Event-driven monitoring workflows
+- Backend API design and service layering
+- Operational alerting patterns and deduplication
+- PostgreSQL relational data modeling
+- React state management and async workflows
+- AI-assisted operational tooling using external APIs
+- Environment-based configuration and secure integrations
+- Production-style deployment using Render and Docker
 
-###📬 Author
+## 📬 Author
 
 Built by Matthew Rasmussen
