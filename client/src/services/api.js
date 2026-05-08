@@ -22,13 +22,7 @@ export async function createEvent(event) {
 
 export async function generateAiSummary(alertId) {
   const res = await axios.post(
-    `${API_URL}/api/alerts/${alertId}/ai-summary`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_ADMIN_TOKEN}`,
-      },
-    }
+    `${API_URL}/api/alerts/${alertId}/ai-summary`
   );
 
   return res.data.data || res.data;
